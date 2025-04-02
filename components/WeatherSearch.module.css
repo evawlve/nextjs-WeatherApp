@@ -1,0 +1,93 @@
+.container {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    background-color: #323232;
+  }
+  
+  .inputRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .label {
+    font-weight: bold;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .input {
+    padding: 8px;
+    width: 60%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }  
+  
+  .button {
+    padding: 8px 12px;
+    margin: 0.5rem 0;
+    border-radius: 6px;
+    border: none;
+    background-color: #0070f3;
+    color: white;
+    cursor: pointer;
+  }
+
+  .button:hover {
+    background-color: #0162d0;
+  }
+
+  .button:active {
+    transform: scale(0.97);
+  }
+  
+  .img {
+    margin: 1rem 0;
+  }
+
+  .results {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .saveButton {
+    margin-top: 1rem;
+    padding: 8px 16px;
+    background-color: #22c55e; /* green save button */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  
+  .saveButton:hover {
+    background-color: #16a34a; /* slightly darker green save button */
+  }
+
+  .saveButton:active {
+    transform: scale(0.97);
+  }
+  

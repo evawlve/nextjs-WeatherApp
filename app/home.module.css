@@ -1,0 +1,16 @@
+/* home.module.css */
+
+.container {
+    text-align: center;
+    padding: 2rem;
+    font-family: sans-serif;
+  }
+  
+  .heading {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .subtext {
+    color: #666;
+  }
