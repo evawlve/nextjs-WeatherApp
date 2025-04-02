@@ -1,0 +1,68 @@
+/* components/WeatherAppClient.module.css */
+
+.authContainer {
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .welcomeMessage {
+    font-size: 0.95rem;
+    color: #999;
+  }
+
+  .title {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.4rem;
+  }
+  
+  /* Base button style - applied to ALL auth buttons */
+  .authButton {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    text-decoration: none; /* Ensure no underline if used as link */
+    display: inline-block; /* Proper alignment and padding */
+    text-align: center;
+  }
+  
+  /* Specific style overrides for Google sign-in */
+  .signInButton {
+    background-color: #4285F4; /* Google Blue */
+    color: white;
+  }
+  .signInButton:hover {
+    background-color: #357ae8;
+  }
+  .signInButton:active {
+      transform: scale(0.98);
+  }
+  
+  
+  /* Specific style overrides for sign out */
+  .signOutButton {
+    background-color: #e7e7e7; /* Light gray */
+    color: #444;
+  }
+  .signOutButton:hover {
+    background-color: #dcdcdc;
+  }
+   .signOutButton:active {
+      transform: scale(0.98);
+  }
+  
+  .signInPrompt {
+    margin-top: 2rem;
+    font-size: 1.1rem;
+    font-style: italic;
+    text-align: center;
+    color: #999;
+  }
