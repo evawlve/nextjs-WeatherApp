@@ -1,5 +1,4 @@
-// components/SnapshotCard.tsx
-// 'use client' is implicitly inherited or add explicitly if needed
+//CSR inherited from SavedSnapshots
 import styles from './SnapshotCard.module.css';
 
 export interface SnapshotData {
@@ -9,16 +8,16 @@ export interface SnapshotData {
   temp: number;
   description: string;
   icon: string;
-  date: string; // Ensure date is consistently a string here
+  date: string; // Ensure date is a string 
 }
 
 interface Props {
   snapshot: SnapshotData;
-  onDelete: (id: string) => void; // or Promise<void>
+  onDelete: (id: string) => void; 
 }
 
 export default function SnapshotCard({ snapshot, onDelete }: Props) {
-  // Basic check for valid snapshot data
+  // Check for valid snapshot data
   if (!snapshot?.id) {
     console.warn("SnapshotCard rendered without valid snapshot data");
     return null; // Don't render if data is incomplete
@@ -32,7 +31,7 @@ export default function SnapshotCard({ snapshot, onDelete }: Props) {
         width={48}
         height={48}
       />
-      {/* Defensive coding: check if properties exist */}
+      {/* Check if properties exist, or displays 'N/A' */}
       <h3>{snapshot.city || 'N/A'}, {snapshot.country || 'N/A'}</h3>
       <p>{snapshot.description || 'No description'}</p>
       <p>Temperature 🌡: {snapshot.temp ?? 'N/A'}°C</p>

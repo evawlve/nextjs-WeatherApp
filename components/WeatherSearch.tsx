@@ -1,10 +1,9 @@
-// components/WeatherSearch.tsx
-'use client';
+'use client'; //CSR
 
 import { useState } from 'react';
 import styles from './WeatherSearch.module.css';
 
-// Define the shape of data expected by the onSave prop
+// Define shape of data expected by the onSave prop
 type SnapshotSaveData = {
   city: string;
   country: string;
@@ -13,8 +12,7 @@ type SnapshotSaveData = {
   icon: string;
 }
 
-// --- TYPE FIX: Change data from tuple '[...]' to array '...[]' ---
-interface WeatherObject { // Define the shape of the inner object clearly
+interface WeatherObject { // Define the shape of the inner object 
     city_name: string;
     country_code: string;
     temp: number;
@@ -27,10 +25,9 @@ interface WeatherObject { // Define the shape of the inner object clearly
 }
 
 interface WeatherbitResponse {
-  data: WeatherObject[]; // <--- Now defined as an ARRAY of WeatherObjects
+  data: WeatherObject[]; // Array of WeatherObjects
   count: number;
 }
-// --- END TYPE FIX ---
 
 interface Props {
   onSave: (snapshotData: SnapshotSaveData) => Promise<void>;
@@ -41,8 +38,8 @@ export default function WeatherSearch({ onSave }: Props) {
   // Initialize weatherData state with null or an object matching the structure but empty
   const [weatherData, setWeatherData] = useState<WeatherbitResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Add error state
+  const [isSaving, setIsSaving] = useState(false); // save snapshot state
+  const [error, setError] = useState<string | null>(null); // error state
 
   async function fetchWeather() {
     if (!location) return;
@@ -60,7 +57,7 @@ export default function WeatherSearch({ onSave }: Props) {
         let errorMsg = `HTTP error! Status: ${response.status}`;
         try {
             const errorData = await response.json();
-            errorMsg = errorData.error || errorMsg; // Use API error message if available
+            errorMsg = errorData.error || errorMsg; // Could use API error message if available
         } catch (_) {
             // Ignore if error response is not JSON
         }
@@ -68,37 +65,32 @@ export default function WeatherSearch({ onSave }: Props) {
       }
       const data: WeatherbitResponse = await response.json();
 
-      // --- CHECK FIX: Use the corrected type ---
       // Check if data exists, data.data is an array, and it's not empty
       if (!data || !Array.isArray(data.data) || data.data.length === 0) {
         console.warn("No weather data found for city:", location);
         throw new Error(`No weather data found for ${location}. Please check the city name.`);
       }
-      // --- END CHECK FIX ---
 
-      setWeatherData(data); // Set the valid data
+      setWeatherData(data); // Set the valid data, updating UI
 
     } catch (err) {
       console.error('Error fetching weather data:', err);
-      // Set error state here to display message to user
+      // Set error state to display message 
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      setWeatherData(null); // Ensure data is cleared on error
+      setWeatherData(null); // Data is cleared on error
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleSave() {
-     // --- CHECK FIX: Use the corrected type ---
      // Ensure weatherData and its data array with at least one element exist
      if (!weatherData || !Array.isArray(weatherData.data) || weatherData.data.length === 0) {
         console.error("Cannot save snapshot: Weather data is missing or invalid.");
         setError("Cannot save snapshot: Weather data is missing."); // Show error
         return;
      }
-     // --- END CHECK FIX ---
 
-     // Access the first element safely now
      const currentWeatherData = weatherData.data[0];
 
      setIsSaving(true);
@@ -114,8 +106,6 @@ export default function WeatherSearch({ onSave }: Props) {
 
     try {
       await onSave(snapshot);
-      // Optionally: Add success feedback to the user
-      // setWeatherData(null); // Maybe clear search results after saving?
     } catch (err) {
       console.error('Failed to trigger save:', err);
       setError(err instanceof Error ? `Failed to save: ${err.message}` : 'Failed to save snapshot.');
