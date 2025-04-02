@@ -58,6 +58,8 @@ export default function WeatherSearch({ onSave }: Props) {
         try {
             const errorData = await response.json();
             errorMsg = errorData.error || errorMsg; // Could use API error message if available
+            
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_) {
             // Ignore if error response is not JSON
         }

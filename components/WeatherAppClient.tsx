@@ -22,7 +22,7 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // Helper function to convert Firestore Timestamps or other date types from fetched data
-function serializeFirestoreDate(date: any): string {
+function serializeFirestoreDate(date: Timestamp | Date | string | null | undefined): string {
     if (date instanceof Timestamp) {
       return date.toDate().toLocaleString(); // Convert Firestore Timestamp to JS Date, then string
     }
