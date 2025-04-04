@@ -47,7 +47,7 @@ export default function WeatherAppClient() {
 
   // Fetch User-Specific Snapshots function
   const fetchUserSnapshots = async (userId: string) => {
-      if (!userId) return; // Should not happen if called correctly, but safety first
+      if (!userId) return; 
 
       setSnapshotsLoading(true);
       setSnapshotError(null); // Clear previous errors
@@ -56,10 +56,8 @@ export default function WeatherAppClient() {
       try {
           // Construct the query to the user's subcollection
           const userSnapshotsCol = collection(db, 'users', userId, 'snapshots');
-          // Optional: Order by date (requires Firestore index)
           const q = query(userSnapshotsCol, orderBy("date", "desc")); // Order by 'date' field, descending
 
-          // const snapshotDocs = await getDocs(userSnapshotsCol); // Without ordering
           const snapshotDocs = await getDocs(q); // With ordering
 
           const userSnapshotData = snapshotDocs.docs.map((doc) => {
@@ -124,7 +122,7 @@ export default function WeatherAppClient() {
   };
 
 
-  // --- Modified Add/Delete Functions (Use User ID in Path) ---
+  // Modified Add/Delete Functions (Use User ID in Path) 
   const addSnapshot = async (newSnapData: Omit<SnapshotData, 'id' | 'date'>) => {
     if (!user) {
       alert("Please sign in to save snapshots.");
@@ -160,10 +158,11 @@ export default function WeatherAppClient() {
 
   const deleteSnapshot = async (id: string) => {
     if (!user) {
-      alert("Please sign in to delete snapshots.");
+      // alert("Please sign in to delete snapshots.");
+      console.error("Attempted to save snapshot while logged out (safeguard triggered).");
       return;
     }
-    // **Use user ID in path**
+    // Use user ID in path
     const snapshotDocRef = doc(db, 'users', user.uid, 'snapshots', id);
 
     try {
@@ -178,7 +177,7 @@ export default function WeatherAppClient() {
   };
 
 
-  // --- Render Logic ---
+  // Render Logic
   if (authLoading) {
       return <p>Loading authentication...</p>;
   }
@@ -205,7 +204,7 @@ export default function WeatherAppClient() {
       </div>
 
       {/* Weather Search (saving now requires login) */}
-      <WeatherSearch onSave={addSnapshot} />
+      <WeatherSearch onSave={addSnapshot} isLoggedIn={!!user} />
 
       {/* Saved Snapshots Section, uses Conditional Rendering */}
       <h2 className={styles.title}>Saved Weather Snapshots</h2>

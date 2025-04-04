@@ -90,4 +90,11 @@
   .saveButton:active {
     transform: scale(0.97);
   }
-  
+
+
+  .saveError {
+  color: #d9534f;
+  font-size: 0.9em;
+  margin-top: 1rem;
+  text-align: center;
+}

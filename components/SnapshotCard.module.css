@@ -8,8 +8,23 @@
     text-align: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease;
+
+    animation: slideFadeIn 0.6s ease-out forwards; /* Apply the animation */
   }
-  
+
+  /* --- Define the keyframes --- */
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px); /* Start 20px to the left */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); /* End at original position */
+  }
+}
+
+
   .card:hover {
     transform: translateY(-4px);
   }

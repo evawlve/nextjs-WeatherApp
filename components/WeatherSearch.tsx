@@ -31,24 +31,28 @@ interface WeatherbitResponse {
 
 interface Props {
   onSave: (snapshotData: SnapshotSaveData) => Promise<void>;
+  isLoggedIn: boolean;
 }
 
-export default function WeatherSearch({ onSave }: Props) {
+export default function WeatherSearch({ onSave, isLoggedIn }: Props) {
   const [location, setLocation] = useState('');
   // Initialize weatherData state with null or an object matching the structure but empty
   const [weatherData, setWeatherData] = useState<WeatherbitResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // save snapshot state
-  const [error, setError] = useState<string | null>(null); // error state
+  const [fetchError, setError] = useState<string | null>(null); // Keep for fetch errors
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   async function fetchWeather() {
     if (!location) return;
 
     setIsLoading(true);
-    setError(null); // Clear previous errors
-    setWeatherData(null); // Clear previous data
+    setError(null); // Clear fetch errors
+    setSaveError(null); // <-- Clear SAVE errors too on new fetch
+    setWeatherData(null);
 
-    const apiKey = process.env.NEXT_PUBLIC_WEATHERBIT_API_KEY || 'YOUR_FALLBACK_KEY'; // Use env var
+    // ... rest of fetchWeather try/catch logic using setError for fetch errors ...
+    const apiKey = process.env.NEXT_PUBLIC_WEATHERBIT_API_KEY || 'YOUR_FALLBACK_KEY';
     const url = `https://api.weatherbit.io/v2.0/current?city=${encodeURIComponent(location)}&key=${apiKey}`;
 
     try {
@@ -57,64 +61,66 @@ export default function WeatherSearch({ onSave }: Props) {
         let errorMsg = `HTTP error! Status: ${response.status}`;
         try {
             const errorData = await response.json();
-            errorMsg = errorData.error || errorMsg; // Could use API error message if available
-            
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_) {
-            // Ignore if error response is not JSON
-        }
+            errorMsg = errorData.error || errorMsg;
+             // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_) { /* Ignore */ }
         throw new Error(errorMsg);
       }
       const data: WeatherbitResponse = await response.json();
-
-      // Check if data exists, data.data is an array, and it's not empty
       if (!data || !Array.isArray(data.data) || data.data.length === 0) {
-        console.warn("No weather data found for city:", location);
         throw new Error(`No weather data found for ${location}. Please check the city name.`);
       }
-
-      setWeatherData(data); // Set the valid data, updating UI
-
+      setWeatherData(data);
     } catch (err) {
       console.error('Error fetching weather data:', err);
-      // Set error state to display message 
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      setWeatherData(null); // Data is cleared on error
+      setError(err instanceof Error ? err.message : 'An unknown error occurred'); // Set FETCH error
+      setWeatherData(null);
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleSave() {
-     // Ensure weatherData and its data array with at least one element exist
-     if (!weatherData || !Array.isArray(weatherData.data) || weatherData.data.length === 0) {
-        console.error("Cannot save snapshot: Weather data is missing or invalid.");
-        setError("Cannot save snapshot: Weather data is missing."); // Show error
-        return;
-     }
+    // Clear previous save error at the start
+    setSaveError(null);
 
-     const currentWeatherData = weatherData.data[0];
+    if (!isLoggedIn) {
+       setSaveError("Please sign in to save snapshots."); // Set the NEW saveError state
+       return; // Stop execution
+    }
 
-     setIsSaving(true);
-     setError(null); // Clear error on save attempt
+    // Check weather data validity (keep this)
+    if (!weatherData || !Array.isArray(weatherData.data) || weatherData.data.length === 0) {
+       console.error("Cannot save snapshot: Weather data is missing or invalid.");
+       // Optional: use setSaveError here too, or keep using setError if preferred for this case
+       setSaveError("Cannot save snapshot: Weather data is missing.");
+       return;
+    }
 
-    const snapshot: SnapshotSaveData = {
-      city: currentWeatherData.city_name,
-      country: currentWeatherData.country_code,
-      temp: currentWeatherData.temp,
-      description: currentWeatherData.weather.description,
-      icon: currentWeatherData.weather.icon,
+    // --- Proceed if logged in and data is valid ---
+    const currentWeatherData = weatherData.data[0];
+    setIsSaving(true);
+    // setError(null); // No need to clear fetch error here
+
+    const snapshot: SnapshotSaveData = { /* ... create snapshot ... */
+       city: currentWeatherData.city_name,
+       country: currentWeatherData.country_code,
+       temp: currentWeatherData.temp,
+       description: currentWeatherData.weather.description,
+       icon: currentWeatherData.weather.icon,
     };
 
-    try {
-      await onSave(snapshot);
-    } catch (err) {
-      console.error('Failed to trigger save:', err);
-      setError(err instanceof Error ? `Failed to save: ${err.message}` : 'Failed to save snapshot.');
-    } finally {
-       setIsSaving(false);
-    }
-  }
+   try {
+     await onSave(snapshot);
+   } catch (err) {
+     // catch errors thrown by the onSave promise itself 
+     console.error('Failed during onSave call:', err);
+     // Use setSaveError to display save-related failures near the button
+     setSaveError(err instanceof Error ? `Failed to save: ${err.message}` : 'Failed to save snapshot.');
+   } finally {
+      setIsSaving(false);
+   }
+ }
 
   return (
     <div className={styles.container}>
@@ -136,7 +142,7 @@ export default function WeatherSearch({ onSave }: Props) {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Enter city"
-            aria-describedby={error ? "error-message" : undefined} // Accessibility
+            aria-describedby={fetchError ? "error-message" : undefined} // Accessibility
           />
         </div>
          <button type="submit" className={styles.button} disabled={isLoading}>
@@ -148,7 +154,7 @@ export default function WeatherSearch({ onSave }: Props) {
        {isLoading && <p role="status">Fetching weather...</p>}
 
         {/* Display error message */}
-       {error && <p id="error-message" role="alert" className={styles.error}>{error}</p>}
+        {fetchError && <p id="error-message" role="alert" className={styles.error}>{fetchError}</p>}
 
        {/* Display results (ensure weatherData and data[0] exist) */}
        {weatherData && weatherData.data.length > 0 && (
@@ -179,7 +185,8 @@ export default function WeatherSearch({ onSave }: Props) {
             disabled={isSaving || isLoading} // Also disable if loading weather
           >
             {isSaving ? 'Saving...' : 'Save Snapshot'}
-          </button>
+          </button> 
+          {saveError && <p className={styles.saveError}>{saveError}</p>}
         </>
       )}
     </div>
