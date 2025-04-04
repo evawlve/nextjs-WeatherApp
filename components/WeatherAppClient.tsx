@@ -6,8 +6,17 @@ import { useState, useEffect } from 'react';
 import WeatherSearch from './WeatherSearch';
 import SavedSnapshots from './SavedSnapshots';
 import type { SnapshotData } from './SnapshotCard';
-// Updated imports: include query, orderBy, Timestamp, getDocs
-import { collection, addDoc, deleteDoc, doc, Timestamp, getDocs, query, orderBy } from 'firebase/firestore';
+import { 
+  collection, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  Timestamp, 
+  getDocs, 
+  query, 
+  orderBy,
+  updateDoc 
+} from 'firebase/firestore';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -21,16 +30,17 @@ import { db, app } from '@/lib/firebase';
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Helper function to convert Firestore Timestamps or other date types from fetched data
-function serializeFirestoreDate(date: Timestamp | Date | string | null | undefined): string {
+type FirestoreDateType = Timestamp | Date | string | null | undefined;
+
+// Helper function to serialize Firestore date
+function serializeFirestoreDate(date: FirestoreDateType): string {
     if (date instanceof Timestamp) {
-      return date.toDate().toLocaleString(); // Convert Firestore Timestamp to JS Date, then string
+        return date.toDate().toLocaleString();
     }
     if (date instanceof Date) {
-      return date.toLocaleString(); // Already a JS Date, convert to string
+        return date.toLocaleString();
     }
-    // Handle cases where date might already be a string or null/undefined
-    return date ? String(date) : new Date().toLocaleString(); // Fallback if needed
+    return date ? String(date) : new Date().toLocaleString();
 }
 
 export default function WeatherAppClient() {
@@ -50,15 +60,14 @@ export default function WeatherAppClient() {
       if (!userId) return; 
 
       setSnapshotsLoading(true);
-      setSnapshotError(null); // Clear previous errors
-      setSnapshots([]); // Clear existing snapshots before fetching new ones
+      setSnapshotError(null);
+      setSnapshots([]);
 
       try {
-          // Construct the query to the user's subcollection
           const userSnapshotsCol = collection(db, 'users', userId, 'snapshots');
-          const q = query(userSnapshotsCol, orderBy("date", "desc")); // Order by 'date' field, descending
+          const q = query(userSnapshotsCol, orderBy("date", "desc"));
 
-          const snapshotDocs = await getDocs(q); // With ordering
+          const snapshotDocs = await getDocs(q);
 
           const userSnapshotData = snapshotDocs.docs.map((doc) => {
               const data = doc.data();
@@ -69,16 +78,16 @@ export default function WeatherAppClient() {
                   temp: data.temp,
                   description: data.description,
                   icon: data.icon,
-                  // Use the helper to convert date from Firestore
                   date: serializeFirestoreDate(data.date),
+                  note: data.note || '', // Add this line to include the note
               } as SnapshotData;
           });
-          setSnapshots(userSnapshotData); // Update state with fetched data
+          setSnapshots(userSnapshotData);
 
       } catch (error) {
           console.error("Error fetching user snapshots:", error);
           setSnapshotError("Failed to load saved snapshots.");
-          setSnapshots([]); // Clear snapshots on error
+          setSnapshots([]);
       } finally {
           setSnapshotsLoading(false);
       }
@@ -106,14 +115,15 @@ export default function WeatherAppClient() {
 
 
   // Sign-In / Sign-Out Functions
-  const signInWithGoogle = async () => { /* ... */
+  const signInWithGoogle = async () => {
     try {
         await signInWithPopup(auth, provider);
       } catch (error) {
         console.error("Error signing in with Google:", error);
       }
   };
-  const signOutUser = async () => { /* ... */
+
+  const signOutUser = async () => {
     try {
         await signOut(auth);
       } catch (error) {
@@ -121,6 +131,29 @@ export default function WeatherAppClient() {
       }
   };
 
+  // Edit function for snapshots
+  const editSnapshot = async (id: string, newData: Partial<SnapshotData>) => {
+    if (!user) {
+      console.error("Attempted to edit snapshot while logged out");
+      return;
+    }
+
+    const snapshotDocRef = doc(db, 'users', user.uid, 'snapshots', id);
+
+    try {
+      await updateDoc(snapshotDocRef, newData);
+      // Update client state
+      setSnapshots((prev) => 
+        prev.map((snap) => 
+          snap.id === id ? { ...snap, ...newData } : snap
+        )
+      );
+      console.log('Snapshot updated successfully');
+    } catch (error) {
+      console.error('Failed to update snapshot:', error);
+      throw error;
+    }
+  };
 
   // Modified Add/Delete Functions (Use User ID in Path) 
   const addSnapshot = async (newSnapData: Omit<SnapshotData, 'id' | 'date'>) => {
@@ -128,31 +161,27 @@ export default function WeatherAppClient() {
       alert("Please sign in to save snapshots.");
       return;
     }
-    // **Use user ID in path**
     const userSnapshotsCol = collection(db, 'users', user.uid, 'snapshots');
 
-    // Use Firestore Timestamp for better sorting/querying
     const snapshotToSave = {
       ...newSnapData,
-      date: Timestamp.now() // Store as Firestore Timestamp
+      date: Timestamp.now(),
+      note: '' // Initialize with empty note
     };
 
     try {
       const docRef = await addDoc(userSnapshotsCol, snapshotToSave);
-      // Update client state immediately for responsiveness
-      // Note: We convert Timestamp back to string for local display state
       setSnapshots((prev) => [
         {
           ...snapshotToSave,
           id: docRef.id,
-          date: snapshotToSave.date.toDate().toLocaleString(), // Convert date back to string
+          date: snapshotToSave.date.toDate().toLocaleString(),
         },
-        ...prev // Add new snapshot to the beginning
+        ...prev
       ]);
-       console.log('User snapshot saved!');
+      console.log('User snapshot saved!');
     } catch (error) {
-       console.error('Failed to save user snapshot:', error);
-       // TODO: Add user feedback for error
+      console.error('Failed to save user snapshot:', error);
     }
   };
 
@@ -213,8 +242,11 @@ export default function WeatherAppClient() {
           {snapshotsLoading && <p>Loading saved snapshots...</p>}
           {snapshotError && <p style={{ color: 'red' }}>{snapshotError}</p>}
           {!snapshotsLoading && !snapshotError && (
-            // Pass user-specific snapshots and delete function
-            <SavedSnapshots snapshots={snapshots} onDelete={deleteSnapshot} />
+            <SavedSnapshots 
+              snapshots={snapshots} 
+              onDelete={deleteSnapshot}
+              onEdit={editSnapshot}
+            />
           )}
         </div>
       ) : ( // Show message if logged out
