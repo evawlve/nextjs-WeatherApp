@@ -30,16 +30,17 @@ import { db, app } from '@/lib/firebase';
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+type FirestoreDateType = Timestamp | Date | string | null | undefined;
+
 // Helper function to serialize Firestore date
-function serializeFirestoreDate(date: any) {
+function serializeFirestoreDate(date: FirestoreDateType): string {
     if (date instanceof Timestamp) {
-      return date.toDate().toLocaleString();
+        return date.toDate().toLocaleString();
     }
     if (date instanceof Date) {
-      return date.toLocaleString(); // Already a JS Date, convert to string
+        return date.toLocaleString();
     }
-    // Handle cases where date might already be a string or null/undefined
-    return date ? String(date) : new Date().toLocaleString(); // Fallback if needed
+    return date ? String(date) : new Date().toLocaleString();
 }
 
 export default function WeatherAppClient() {
