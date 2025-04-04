@@ -40,7 +40,7 @@ export default function WeatherSearch({ onSave, isLoggedIn }: Props) {
   const [weatherData, setWeatherData] = useState<WeatherbitResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // save snapshot state
-  const [fetchError, setError] = useState<string | null>(null); // Keep for fetch errors
+  const [fetchError, setError] = useState<string | null>(null); // fetch errors
   const [saveError, setSaveError] = useState<string | null>(null);
 
   async function fetchWeather() {
@@ -51,8 +51,7 @@ export default function WeatherSearch({ onSave, isLoggedIn }: Props) {
     setSaveError(null); // <-- Clear SAVE errors too on new fetch
     setWeatherData(null);
 
-    // ... rest of fetchWeather try/catch logic using setError for fetch errors ...
-    const apiKey = process.env.NEXT_PUBLIC_WEATHERBIT_API_KEY || 'YOUR_FALLBACK_KEY';
+    const apiKey = process.env.NEXT_PUBLIC_WEATHERBIT_API_KEY || 'FALLBACK_KEY';
     const url = `https://api.weatherbit.io/v2.0/current?city=${encodeURIComponent(location)}&key=${apiKey}`;
 
     try {
@@ -89,18 +88,16 @@ export default function WeatherSearch({ onSave, isLoggedIn }: Props) {
        return; // Stop execution
     }
 
-    // Check weather data validity (keep this)
+    // Check weather data validity
     if (!weatherData || !Array.isArray(weatherData.data) || weatherData.data.length === 0) {
        console.error("Cannot save snapshot: Weather data is missing or invalid.");
-       // Optional: use setSaveError here too, or keep using setError if preferred for this case
        setSaveError("Cannot save snapshot: Weather data is missing.");
        return;
     }
 
-    // --- Proceed if logged in and data is valid ---
+    // Proceed if logged in and data is valid
     const currentWeatherData = weatherData.data[0];
     setIsSaving(true);
-    // setError(null); // No need to clear fetch error here
 
     const snapshot: SnapshotSaveData = { /* ... create snapshot ... */
        city: currentWeatherData.city_name,
@@ -113,9 +110,9 @@ export default function WeatherSearch({ onSave, isLoggedIn }: Props) {
    try {
      await onSave(snapshot);
    } catch (err) {
-     // catch errors thrown by the onSave promise itself 
+     // catch errors thrown by the onSave promise  
      console.error('Failed during onSave call:', err);
-     // Use setSaveError to display save-related failures near the button
+     // Use setSaveError to display save-related failures near button
      setSaveError(err instanceof Error ? `Failed to save: ${err.message}` : 'Failed to save snapshot.');
    } finally {
       setIsSaving(false);
@@ -182,7 +179,7 @@ export default function WeatherSearch({ onSave, isLoggedIn }: Props) {
           <button
             className={styles.saveButton}
             onClick={handleSave}
-            disabled={isSaving || isLoading} // Also disable if loading weather
+            disabled={isSaving || isLoading} //disable if loading weather or if saving
           >
             {isSaving ? 'Saving...' : 'Save Snapshot'}
           </button> 

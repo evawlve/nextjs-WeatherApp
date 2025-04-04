@@ -29,7 +29,7 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: background-color 0.2s ease, transform 0.1s ease;
-    text-decoration: none; /* Ensure no underline if used as link */
+    text-decoration: none; 
     display: inline-block; /* Proper alignment and padding */
     text-align: center;
   }

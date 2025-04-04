@@ -1,41 +1,273 @@
-.card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 0.5rem;
-    width: 200px;
-    background-color: #323232;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
+/* components/SnapshotCard.module.css */
 
-    animation: slideFadeIn 0.6s ease-out forwards; /* Apply the animation */
-  }
+/* --- Flip Card Structure --- */
+.cardContainer {
+  perspective: 1000px;
+  width: 200px; /* Adjust */
+  height: 320px; /* Adjust */
+  animation: fadeIn 0.5s ease-out;
+}
 
-  /* --- Define the keyframes --- */
-@keyframes slideFadeIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(-20px); /* Start 20px to the left */
+    transform: translateX(-20px);
   }
   to {
     opacity: 1;
-    transform: translateX(0); /* End at original position */
+    transform: translateX(0);
   }
 }
 
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
 
-  .card:hover {
-    transform: translateY(-4px);
+.cardFlipped {
+  transform: rotateY(180deg);
+}
+
+/* --- Shared Face Styles --- */
+.cardFront, .cardBack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden; /* Safari */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem; 
+  background-color: #3f3f46; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #e5e5e5;
+}
+
+/* --- Front Face Layout --- */
+.cardFront {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center flex items horizontally */
+}
+
+.cardFront h3 {
+  text-align: center; /* Center title text */
+  margin-top: 0;
+  margin-bottom: 0.75rem; 
+  font-size: 1.15rem;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+.iconContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.75rem; /* Space below icon */
+}
+
+.iconContainer img {
+  display: block;
+}
+
+.infoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  margin-bottom: 1rem; /* Space above button group */
+}
+
+.infoContainer p {
+  margin: 0;
+  text-align: center; /* Center info text */
+  font-size: 0.9rem;
+}
+
+
+.infoContainer .dateValue {
+  color: #cccccc;
+  /* Inherits center align */
+}
+
+/* --- Button Group --- */
+.buttonGroup {
+  position: absolute;
+  bottom: 1rem; /* Position from bottom edge */
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center; /* Center buttons within the group */
+}
+
+/* --- Front Button Styles --- */
+.deleteButton {
+  padding: 6px 12px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+.deleteButton:hover { background-color: #b91c1c; }
+
+.flipCardButton {
+  padding: 6px 12px;
+  background-color: white;
+  color: #333;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  min-width: 100px;
+}
+.flipCardButton:hover { background-color: #f0f0f0; }
+
+.flipCardButton img {
+  width: 16px;
+  height: 16px;
+  filter: none;
+}
+
+/* --- Back Face --- */
+.cardBack {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Keep existing back-specific styles */
+.editForm {
+  margin-top: 1rem;
+  margin-bottom: 2.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editInput {
+  width: 100%;
+  flex-grow: 1;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #222;
+  color: white;
+  resize: none;
+  min-height: 80px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.saveButton {
+  padding: 6px 12px;
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.saveButton:hover {
+  background-color: #16a34a;
+}
+
+.backFlipButton {
+  padding: 6px 12px;
+  background-color: white;
+  color: #333;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  width: auto;
+  margin: 0 auto;
+  min-width: 100px;
+}
+
+.backFlipButton:hover {
+  background-color: #f0f0f0;
+}
+
+.backFlipButton img {
+  width: 16px;
+  height: 16px;
+  filter: none;
+}
+
+/* Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  
-  .card button {
-    margin-top: 0.5rem;
-    padding: 6px 12px;
-    background-color: #ef4444; /* red-500 */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  to {
+    transform: rotate(360deg);
   }
+}
+
+.flipCardButton:hover img,
+.backFlipButton:hover img {
+  animation: spin 0.3s linear;
+}
+
+/* Add these new styles */
+.note {
+  font-style: italic;
+  color: #a3a3a3;
+  font-size: 0.9rem;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.noteView {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.noteView h4 {
+  margin: 0;
+  color: #e5e5e5;
+}
+
+.noteView p {
+  margin: 0;
+  font-style: italic;
+  color: #a3a3a3;
+  word-wrap: break-word;
+}
+
+.noteView button {
+  padding: 6px 12px;
+  background-color: #4b5563;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: auto;
+}
+
+.noteView button:hover {
+  background-color: #374151;
+}
   
